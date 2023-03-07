@@ -14,13 +14,13 @@ namespace Lab2
 
         public bool IsEmpty => Count == 0;
 
-
         public MinHeap(T[] initialArray = null)
         {
             array = new T[initialSize];
 
             if (initialArray == null)
             {
+                Count = 0;
                 return;
             }
 
@@ -28,12 +28,11 @@ namespace Lab2
             {
                 Add(item);
             }
-
         }
 
         /// <summary>
         /// Returns the min item but does NOT remove it.
-        /// Time complexity: O(?)
+        /// Time complexity: O(1)
         /// </summary>
         public T Peek()
         {
@@ -65,7 +64,6 @@ namespace Lab2
             {
                 DoubleArrayCapacity();
             }
-
         }
 
         public T Extract()
@@ -80,10 +78,25 @@ namespace Lab2
         /// </summary>
         public T ExtractMax()
         {
+            if(IsEmpty)
+            {
+                throw new Exception("Empty Heap");
+            }
             // linear search
-
+            var max = array[0];
+            int maxIndex = 0;
+            for(int i = 0; i < Count; i++)
+            {
+                if (array[i].CompareTo(max) > 0)
+                {
+                    maxIndex = i;
+                    max = array[i];
+                }
+            }
             // remove max
-
+            Swap(maxIndex, Count - 1);
+            Count--;
+            return max;
         }
 
         // TODO
@@ -128,20 +141,37 @@ namespace Lab2
                     return true;
                 }
             }
-
             return false;
-
         }
 
         // TODO
         /// <summary>
         /// Updates the first element with the given value from the heap.
-        /// Time complexity: O( ? )
+        /// Time complexity: O( n )
         /// </summary>
         public void Update(T oldValue, T newValue)
         {
-
-
+            if(IsEmpty)
+            {
+                throw new Exception("Empty Heap");
+            }    
+            else if(Contains(oldValue))
+            {
+                //linear search
+                for (int i = 0; i < Count; i++)
+                {
+                    if (array[i].CompareTo(oldValue) == 0)
+                    {
+                        array[i] = newValue;
+                        TrickleDown(i);
+                        TrickleUp(i);
+                    }
+                }
+            }
+            else
+            {
+                throw new Exception("Value not found");
+            }
 
         }
 
@@ -152,17 +182,39 @@ namespace Lab2
         /// </summary>
         public void Remove(T value)
         {
-
-
-
+            if(Contains(value))
+            {
+                for(int i = 0; i < Count; i ++)
+                {
+                    if (array[i].CompareTo(value) == 0)
+                    {
+                        Swap(i, Count - 1);
+                        TrickleUp(i);
+                        Count--;
+                    }
+                }
+            }
+            else
+            {
+                throw new Exception("Empty Heap/value not found");
+            }
         }
 
         // TODO
         // Time Complexity: O( log(n) )
         private void TrickleUp(int index)
         {
-
-
+            if (array[Parent(index)].CompareTo(array[index]) <= 0)
+            {
+                return;
+            }
+            else
+            {
+                Swap(index, Parent(index));
+                TrickleUp(Parent(index));
+                TrickleDown(index);
+            }
+            return;
         }
 
         // TODO
@@ -170,6 +222,27 @@ namespace Lab2
         private void TrickleDown(int index)
         {
 
+            int leftIndex = LeftChild(index);
+            int rightIndex = RightChild(index);
+
+            if ((leftIndex >= Count && rightIndex >= Count) || (array[leftIndex].CompareTo(array[index]) >= 0 && array[rightIndex].CompareTo(array[index]) >= 0))
+            {
+                return;
+            }
+
+            if (array[leftIndex].CompareTo(array[index]) <= 0 && leftIndex < Count)
+            {
+                Swap(index, leftIndex);
+                TrickleDown(leftIndex);
+                TrickleUp(index);
+            }
+            else if(array[rightIndex].CompareTo(array[index]) <= 0 && rightIndex < Count)
+            {
+                Swap(index, rightIndex);
+                TrickleDown(rightIndex);
+                TrickleUp(index);
+            }
+            return;
         }
 
         // TODO
@@ -178,7 +251,15 @@ namespace Lab2
         /// </summary>
         private static int Parent(int position)
         {
-
+            if(position == 1)
+            {
+                return 0;
+            }
+            else if(position % 2 == 0)
+            {
+                return position / 2;
+            }
+            return (position + 1) / 2;
         }
 
         // TODO
@@ -187,6 +268,7 @@ namespace Lab2
         /// </summary>
         private static int LeftChild(int position)
         {
+            return position * 2 + 1;
         }
 
         // TODO
@@ -195,6 +277,11 @@ namespace Lab2
         /// </summary>
         private static int RightChild(int position)
         {
+            if(position == 0)
+            {
+                return 2;
+            }
+            return position * 2;
         }
 
         private void Swap(int index1, int index2)
@@ -209,8 +296,6 @@ namespace Lab2
         {
             Array.Resize(ref array, array.Length * 2);
         }
-
-
     }
 }
 
